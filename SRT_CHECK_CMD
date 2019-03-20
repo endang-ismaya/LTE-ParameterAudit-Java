@@ -1,0 +1,45 @@
+$date = `date "+%y%m%d_%H%M%S"`
+$sitename = `$gawk -v nodename="$nodename" 'BEGIN{ gsub(" ","",nodename);print substr(nodename,1,16)}'
+lt all
+l+mm KGET_SRT_$sitename.log
+kget all
+l-
+l+ $sitename_SRT_CHECK_$date.log
+s+
+lt all
+st cell
+altk
+cabr
+st tma
+get . tmaref
+hget rfbranch rfportref
+st ret
+st antenna
+hget retsubunit iuantsectorid|iuantbase|maxtilt|minTilt|iuantAntennaModelNumber|userLabel
+get antenna iuantDeviceType
+get AntennaNearUnit rfport
+get . electricalAntennaTilt
+get ^EUtranCellFDD= ^tac
+wait 1 
+hget antenna administrativeState|iuantDeviceType|onUnitUniqueId|operationalState|productNumber|serialNumber|softwareVersion
+get . atten
+get . delay
+get . rachroot
+get . earfcn
+sget EUtranFreqRelation eutranFrequencyRef
+sget EUtraNetwork=.,EUtranFrequency= arfcnValueEUtranDl
+hgetc RfBranch= reservedBy|rfPortRef|auPortRef
+hgetc rfbranch [ud]lTrafficDelay|[ud]lattenuation
+cabx
+wait 2
+st mme
+st TermPointToENB
+get ^EUtranCellFDD= ChannelBandwidth
+//lh ru fui get vswr 1 | awk '/vswr:/{print}'| nawk '{print "vswr1 "$0}'
+//lh ru fui get vswr 2 | awk '/vswr:/{print}'| nawk '{print "vswr2 "$0}'
+//pmrk -m 8 -r 6 | egrep -i "radiorec"
+ue print -admitted
+lh ru fm getfaults
+cvls
+lga
+l-

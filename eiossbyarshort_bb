@@ -1,0 +1,87 @@
+#!/usr/bin/bash
+
+# /////////////////////////////////////////////////////////////////////////////// #
+# Application Name	: eiosssbyarshort_bb
+# Version						: v.1.0.1
+# Author 						: endang.ismaya@gmail.com
+# Date 							: May 06, 2016
+# Location 					: San Francisco, USA
+# Comment						:	Create SRT Logs with Cygwin/OSS with first create sitelist
+# /////////////////////////////////////////////////////////////////////////////// #
+
+usage ()
+{
+	cat <<END
+Usage:
+./srtlogs [filename]
+ 
+ filename : filename or absolute path name tobe proceed.
+END
+}
+
+## error catch
+error ()
+{
+	echo "Error: $1"
+	usage
+	exit $2
+} >&2
+
+##// checking if no argument (filename)
+[[ $# -gt 2 ]] && { echo "Missing arguments" >&2; usage ; exit 1; }
+
+## set filename variable
+filename="$1"
+srtfile="srtsitelist"
+
+## 
+java -cp /home/ei400b/00_Tools/ltesrtbb/byarbbuser.v6pro.jar Main
+STATUS="${?}"
+if [[ ${STATUS} == 0 ]]; then
+        exit 1
+fi
+
+# check if sitelist more than one
+if [[ $filename =~ .*,.* ]]; then
+rm ${srtfile} >&2
+	 IFS="," read -a array <<< "$filename"
+	 
+   for (( i=0; i < ${#array[@]} ; i++ )); do
+   			sitename="${array[i]}"
+   			## echo "${sitename}"
+   				echo "${sitename}" >> ${srtfile}
+   				# eNBName="${eNBName}_${sitename}_"
+   done
+# echo "${srtfile}" 
+filename="${srtfile}"
+else
+	echo "$1" > ${srtfile}
+	filename="${srtfile}"
+fi
+
+##// check the existance of the filename
+if [[ ! -e $filename ]]; then
+	echo "File ${filename} is not exists" >&2
+	exit 1
+fi
+
+cat -vn ${filename}
+if [[ $2 ]] ; then
+		answer="$2"
+else
+# printf "%s :\n" "Please choose the number to be proceed"
+read -p "Execute the sitelist (y/n) : " answer
+	if [[ $answer != "y" ]]; then
+		exit 1
+	fi
+fi
+
+## 
+/home/ei400b/00_Tools/ltesrtbb/eiossbyar_bb -f srtsitelist
+
+exit 0
+
+# //////////////////////////////////////////////////////////////////////////////// #
+# Revision.History
+# v.1.0.0							-> May 06 2016, Beta Version
+# //////////////////////////////////////////////////////////////////////////////// #
